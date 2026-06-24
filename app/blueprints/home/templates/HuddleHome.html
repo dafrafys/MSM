@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Huddle Maintenance</title>
+
+
+  <!-- Lien facultatif pour FontAwesome (pour les icônes) -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.3.0/css/all.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" >
+
+  <link rel="stylesheet" href="{{ url_for('home.static', filename='css/style-home.css') }}">
+
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">   <!-- Lien vers la feuille de style principale -->
+
+</head>
+
+<body data-base-url="{{ url_for('home.huddle_home') }}">
+  <!-- En-tête : calendrier / sélecteur de date -->
+{% include 'Header.html' %}
+
+  <!-- Contenu principal -->
+  <main>
+
+    <!-- Section de checklist pour la Maintenance (services) -->
+    <section id="service-checklist">
+      <h2>Maintenance</h2>
+      <div class="checkbox-group">
+        <label class="checkbox-item">
+          <input type="checkbox" id="service-meca">
+          <a href="{{ url_for('services.planning', service_key='meca') }}" class="my-link-style">
+            <i class="fa-solid fa-cogs"></i></a>
+          Mécanique
+        </label>
+
+        <label class="checkbox-item">
+          <input type="checkbox" id="service-utilite">
+          <a href="{{ url_for('services.planning', service_key='util') }}" class="my-link-style">
+            <i class="fa-solid fa-wrench"></i></a>
+          Utilité
+        </label>
+
+        <label class="checkbox-item">
+          <input type="checkbox" id="service-sgx">
+          <a href="{{ url_for('services.planning', service_key='sgx') }}" class="my-link-style">
+            <i class="fa-solid fa-shield-alt"></i></a>
+          SGX
+        </label>
+
+        <label class="checkbox-item">
+          <input type="checkbox" id="service-elec">
+          <a href="{{ url_for('services.planning', service_key='elec') }}" class="my-link-style">
+            <i class="fa-solid fa-bolt"></i>
+          </a>
+          Électrique
+        </label>
+
+        <label class="checkbox-item">
+          <input type="checkbox" id="service-autom">
+          <a href="{{ url_for('services.planning', service_key='autom') }}" class="my-link-style">
+            <i class="fa-solid fa-robot"></i></a>
+          Automatisme
+        </label>
+      </div>
+    </section>
+
+
+    <!-- Bouton de démarrage du Huddle + zone de statut -->
+    <button id="start-session-btn">Démarrer la session Huddle</button>
+    <div id="session-status"></div>
+
+
+    <!-- Section Sécurité – Qualité -->
+    <h1>Sécurité – Qualité</h1>
+
+    <div class="secqual-container">
+
+      <!-- Colonne 1 : Indicateur BBS -->
+      <div class="bbs-block">
+        <h2>Indicateur BBS Maintenance – {{ month }}/{{ year }}</h2>
+        <p>Avancement : <strong>{{ progression_bbs|int }}%</strong> de l'objectif</p>
+        <div class="progress-bar" style="--expected: {{ expected_pct|int }}%;">
+          <div class="progress {{ bbs_status }}" style="width: {{ progression_bbs }}%;"></div>
+        </div>
+        <small>Objectif attendu à ce jour : {{ expected_pct|int }} %</small>
+        <div class="bbs-missing">
+          <h3>Personnels sans BBS ce mois</h3>
+          <ul>
+            {% for pers in personnels_sans_bbs %}
+              <li>{{ pers.Nom }} {{ pers.Prenom }}</li>
+            {% else %}
+              <li><em>Tous les personnels ont réalisé des BBS</em></li>
+            {% endfor %}
+          </ul>
+        </div>
+        <div class="bbs-individus">
+          <h3>Détails BBS individuels - {{ month }}/{{ year }}</h3>
+          <table>
+            <thead>
+              <tr><th>Nom</th><th>Nombre de BBS réalisés</th></tr>
+            </thead>
+            <tbody>
+              {% for ind in bbs_individus %}
+              <tr>
+                <td data-label="Nom">{{ ind.Nom }}</td>
+                <td data-label="Nombre de BBS réalisés" data-count="{{ ind.nombre_bbs }}">{{ ind.nombre_bbs }}</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Colonne 2 : Jour sans accident et Infos Sécurité (verticalement empilés) -->
+      <div class="accident-block">
+        <!-- Sous-bloc pour le compteur -->
+        <div class="accident-counter">
+          <div class="label"><strong>Dernier accident</strong></div>
+          <div class="date">{% if last_accident_date %}
+              {{ last_accident_date.strftime('%d/%m/%Y') }}
+              {% else %}
+              {% endif %}</div>
+
+          <div class="safety-icon">🚫</div>
+            <div class="days">{{ days_without_accident }}</div>
+            <div class="label">Jours sans accident</div>
+          </div>
+
+
+          <!-- Sous-bloc pour les Carte STOP  -->
+        <div class="cartes-stop-table">
+          <div class="daily-carte-stop">
+            <h3>Saisie des cartes stop réalisées</h3>
+            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#carteStopModal">
+              <i class="fa-solid fa-pen-to-square"></i> Saisie cartes stop
+            </button>
+            <!-- Bouton pour ouvrir le modal -->
+            <button type="button" class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#otHebdoModal">
+              <i class="fa-solid fa-pen-to-square"></i> Saisie hebdomadaire OT
+            </button>
+              {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                  <ul class="flashes">
+                    {% for category, message in messages %}
+                      <li class="{{ category }}">{{ message }}</li>
+                    {% endfor %}
+                  </ul>
+                {% endif %}
+              {% endwith %}
+            </form>
+            <div class="recap-carte-stop">
+              <h4>Cartes stop réalisées en {{ month_name }} : {{ cartes_stop_count }}</h4>
+            </div>
+              <h4>Rapport par service</h4>
+              <table>
+                <thead>
+                  <tr>
+                    <th>Service</th>
+                    <th>Cartes stop du mois</th>
+                    <th>Cartes stop J-1</th>
+                    <th>OT à couvrir</th>
+                    <th>Ratio hebdo (%)</th>
+                    <th>% cartes stop sur le mois</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for row in cartes_stop_par_service %}
+                  <tr>
+                    <td data-label="Service">{{ row.Service_code }}</td>
+                    <td data-label="Cartes stop ce mois">{{ row.nb_cartes_mois }}</td>
+                    <td data-label="Cartes stop aujourd'hui">{{ row.nb_cartes_aujourdhui }}</td>
+                    <td data-label="OT nécessaires cette semaine">{{ row.ot_necessaire | default('0') }}</td>
+                    <td data-label="Ratio hebdo (%)">
+                      {% if row.ratio_hebdo is defined and row.ratio_hebdo is not none %}
+                        {{ row.ratio_hebdo | round(2) }}
+                      {% else %}
+                        -
+                      {% endif %}
+                    </td>
+                    <td data-label="% cartes stop sur mois">
+                      {% if row.pourcentage_sur_mois is defined and row.pourcentage_sur_mois is not none %}
+                        {{ row.pourcentage_sur_mois | round(2) }}%
+                      {% else %}
+                        -
+                      {% endif %}
+                    </td>
+                  </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Sous-bloc pour les notes -->
+          <div class="Publication_EHS">
+            <div class="label"><strong> Sécurité EHS</strong></div>
+            <!--informations de l'ehs, lien -->
+          </div>
+      </div>
+
+      <!-- Colonne 3 : Croix de sécurité -->
+      <div class="safety-cross">
+        <h3> ✚ Croix de sécurité </h3>
+        <h4>{{ month }}/{{ year }}</h4>
+
+        <!-- Haut : 4 lignes de 2 -->
+        <div class="row row-2">
+          <div class="day {{ day_status[1] }}" title="Day 1">1</div>
+          <div class="day {{ day_status[2] }}" title="Day 2">2</div>
+        </div>
+        <div class="row row-2">
+          <div class="day {{ day_status[3] }}" title="Day 3">3</div>
+          <div class="day {{ day_status[4] }}" title="Day 4">4</div>
+        </div>
+        <div class="row row-2">
+          <div class="day {{ day_status[5] }}" title="Day 5">5</div>
+          <div class="day {{ day_status[6] }}" title="Day 6">6</div>
+        </div>
+        <div class="row row-2">
+          <div class="day {{ day_status[7] }}" title="Day 7">7</div>
+          <div class="day {{ day_status[8] }}" title="Day 8">8</div>
+        </div>
+
+        <!-- Milieu : 2 lignes de 8 -->
+        <div class="row row-8">
+          <div class="day {{ day_status[9] }}" title="Day 9">9</div>
+          <div class="day {{ day_status[10] }}" title="Day 10">10</div>
+          <div class="day {{ day_status[11] }}" title="Day 11">11</div>
+          <div class="day {{ day_status[12] }}" title="Day 12">12</div>
+          <div class="day {{ day_status[13] }}" title="Day 13">13</div>
+          <div class="day {{ day_status[14] }}" title="Day 14">14</div>
+          <div class="day {{ day_status[15] }}" title="Day 15">15</div>
+          <div class="day {{ day_status[16] }}" title="Day 16">16</div>
+        </div>
+        <div class="row row-8">
+          <div class="day {{ day_status[17] }}" title="Day 17">17</div>
+          <div class="day {{ day_status[18] }}" title="Day 18">18</div>
+          <div class="day {{ day_status[19] }}" title="Day 19">19</div>
+          <div class="day {{ day_status[20] }}" title="Day 20">20</div>
+          <div class="day {{ day_status[21] }}" title="Day 21">21</div>
+          <div class="day {{ day_status[22] }}" title="Day 22">22</div>
+          <div class="day {{ day_status[23] }}" title="Day 23">23</div>
+          <div class="day {{ day_status[24] }}" title="Day 24">24</div>
+        </div>
+
+        <!-- Bas : 4 lignes de 2 -->
+        <div class="row row-2">
+          <div class="day {{ day_status[25] }}" title="Day 25">25</div>
+          <div class="day {{ day_status[26] }}" title="Day 26">26</div>
+        </div>
+        <div class="row row-2">
+          <div class="day {{ day_status[27] }}" title="Day 27">27</div>
+          <div class="day {{ day_status[28] }}" title="Day 28">28</div>
+        </div>
+        <div class="row row-2">
+          <div class="day {{ day_status[29] }}" title="Day 29">29</div>
+          <div class="day {{ day_status[30] }}" title="Day 30">30</div>
+        </div>
+        <div class="row row-2">
+          <div class="day {{ day_status[31] }}" title="Day 31">31</div>
+          <div class="day null" title="Pas compté"></div>
+        </div>
+
+        <div class="safety-legend">
+          <div><span class="day SS"></span> SS/MINT : Simple soin</div>
+          <div><span class="day SA"></span> AA/SA : Accident avec et sans arrêt </div>
+          <div><span class="day safe"></span> Safe : Aucun incident</div>
+        </div>
+      </div>
+    </div>
+
+    <label for="accident-filter">Filtrer par service :</label>
+    <select id="accident-filter">
+      <option value="all">Tous</option>
+      <option value="Maintenance">Maintenance</option>
+    </select>
+
+    <!-- Liste d'incidents -->
+    <div id="accident-list" class="incident-scroll">
+      {% for acc in accidents %}
+        <div class="accident-item" data-service="{{ acc.Service_Acc }}">
+          <div class="incident-card {{ acc.Type_Acc|upper }}">
+            <h3>{{ acc.Type_Acc }} – {{ acc.Classe_Acc }}</h3>
+            <div class="info">🕒 Date : {{ acc.date_str or "Non renseignée" }}</div>
+            <div class="info">👷 Service : {{ acc.Service_Acc }}</div>
+            <div class="info">📍 Zone : {{ acc.zone }}</div>
+            <div class="info">📝 Description : {{ acc.description }}</div>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+
+
+    <!-- Bloc qualité défilable
+    <div class="qualite-scroll">
+      <div class="qualite-block">
+        <h2>📊 Qualité (ETL en cours)</h2>
+        <ul>
+          <li>❌ Nombre de non-conformités : <strong>3</strong></li>
+          <li>🛠 Type de défaut : produit, process, emballage…</li>
+          <li>📦 Ligne : Ligne 1</li>
+          <li>📊 Taux de conformité : 98%</li>
+          <li>📄 Actions : Révision des process</li>
+        </ul>
+      </div>
+
+      <div class="qualite-block">
+        <h2> LPA Roulette (petit plus)</h2>
+        <ul>
+          <li>❌ Non-conformités : <strong>3</strong></li>
+          <li>Type de défaut : produit, process, emballage…</li>
+          <li>Dernier LPA : ....</li>
+          <li>Taux de conformité : 98%</li>
+          <li>📄 Actions : Voir Plan d'Action</li>
+        </ul>
+      </div>
+    </div>
+  -->
+
+    <div class="impacts-header">
+      <button
+        id="toggle-range"
+        class="toggle-range-btn"
+        aria-label="Basculer affichage mois / 31 jours"
+        title="Basculer affichage mois / 31 jours"
+      >
+        <svg viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+          <!-- Premier chevron -->
+          <polyline points="7 7 12 12 7 17"></polyline>
+          <!-- Deuxième chevron -->
+          <polyline points="13 7 18 12 13 17"></polyline>
+        </svg>
+      </button>
+      <div>
+        <h2>Liste des Impacts</h2>
+        <div class="current-range">
+          Mois {{ month }}/{{ year }}
+        </div>
+      </div>
+    </div>
+
+    <!-- Section Fibrage -->
+    <h2>Impacts Fibrage</h2>
+    <div id="fibrage-container" class="impact-container">
+      {% with impacts = impacts_fibrage %}
+        {% include 'partials/impact_cards.html' %}
+      {% endwith %}
+    </div>
+     <!-- Section Finissage -->
+    <h2>Impacts Finissage</h2>
+    <div id="finissage-container" class="impact-container">
+      {% with impacts = impacts_finissage %}
+        {% include 'partials/impact_cards.html' %}
+      {% endwith %}
+    </div>
+
+    {# Overlay et panneau inclus sans condition #}
+    <div id="impact-form-overlay" onclick="closeForm()"></div>
+
+    <div id="impact-form-panel" class="modern">
+      <div class="form-header color">
+        <h3 id="impact-form-title">Plan d'action</h3>
+        <button class="close-btn" onclick="closeForm()">×</button>
+      </div>
+
+      <form class="impact-form" action="/update_plan_action" method="POST">
+        <input type="hidden" name="impact_id">
+
+        <div class="form-group">
+          <label>Analyse</label>
+          <select name="type_analyse">
+            {% for t in types_analyse %}
+              <option value="{{ t }}">{{ t }}</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>Cause</label>
+          <input type="text" name="cause" placeholder="Décrire la cause">
+        </div>
+
+        <div class="form-group">
+          <label>Action</label>
+          <textarea name="action" rows="2" placeholder="Décrire l'action"></textarea>
+        </div>
+
+        <div class="form-group">
+          <label>Commentaire</label>
+          <textarea name="commentaire" rows="2" placeholder="Notes complémentaires..."></textarea>
+        </div>
+
+        <div class="form-group">
+          <label>Pilote</label>
+          <select name="pilot_id">
+            {% for p in personnels %}
+              <option value="{{ p.Personnel_Id }}">{{ p.nom_complet }}</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>Échéance</label>
+          <input type="date" name="echeance">
+        </div>
+
+        <div class="form-group">
+          <label>Statut</label>
+          <select name="statut">
+            {% for s in statuts %}
+              <option value="{{ s }}">{{ s }}</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>Priorité (1-5)</label>
+          <input type="number" name="priority" value="2" min="1" max="5">
+        </div>
+
+        <button type="submit" class="submit-btn modern">✅ Enregistrer le plan d’action</button>
+      </form>
+    </div>
+    <!-- Synthèse visuelle
+    <div class="synthese-visuelle">
+      <h2>📊 Synthèse Visuelle (Grafana)</h2>
+      <div class="charts">
+        <div class="chart">
+          <p>Indicateur</p>
+          <iframe
+                src="https://aschuster.grafana.net/d-solo/60m7RfhueMJBCLtV0ouFn8O2t6KTwaYV/your-dashboard?orgId=1&panelId=2&theme=light&from=now-7d&to=now"
+                width="850" height="500" frameborder="0">
+              </iframe>
+            </div>
+          </div>
+        </div>-->
+      </div>
+    </div>
+
+  </main>
+
+  <!-- Pied de page : navigation -->
+{% include 'Footer.html' %}
+
+  <!-- Script JavaScript -->
+  <script>
+  // On récupère les bons chemins depuis Flask
+  const urls = {
+    fibrage: {
+      month: "{{ url_for('home.cards', period='month', secteur='fibrage') }}",
+      sliding: "{{ url_for('home.cards', period='31days', secteur='fibrage') }}"
+    },
+    finissage: {
+      month: "{{ url_for('home.cards', period='month', secteur='finissage') }}",
+      sliding: "{{ url_for('home.cards', period='31days', secteur='finissage') }}"
+    }
+  };
+</script>
+<script src="{{ url_for('static', filename='js/commun.js') }}" defer></script>
+<script src="{{ url_for('home.static', filename='js/home.js') }}" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+<!-- Modal Carte stop -->
+<div class="modal fade" id="carteStopModal" tabindex="-1" aria-labelledby="carteStopModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form id="carte-stop-daily" method="POST" action="/submit-carte-stop">
+        <div class="modal-header">
+          <h5 class="modal-title" id="carteStopModalLabel">Saisie quotidienne cartes stop</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+        </div>
+        <div class="modal-body">
+          <input type="hidden" name="session_id" value="{{ session_id }}">
+
+          <div class="mb-3">
+            <label for="personnel_id" class="form-label">Personnel :</label>
+            <select id="personnel_id" name="personnel_id" class="form-select" required>
+              {% for p in personnels %}
+                <option value="{{ p.Personnel_Id }}">{{ p.nom_complet }}</option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <div class="mb-3">
+            <label for="date_realisation" class="form-label">Date de réalisation :</label>
+            <input type="date" id="date_realisation" name="date_realisation" class="form-control" value="{{ selected_month_year }}-01" required>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="submit" class="btn btn-primary">Enregistrer</button>
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+<!-- Modal Hebdo -->
+<div class="modal fade" id="otHebdoModal" tabindex="-1" aria-labelledby="otHebdoModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form id="carte-stop-hebdo" method="POST" action="/submit-carte-stop-hebdo">
+        <div class="modal-header">
+          <h5 class="modal-title" id="otHebdoModalLabel">Saisie hebdomadaire opérations nécessitant carte stop</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+        </div>
+        <div class="modal-body">
+          <label for="service_code" class="form-label">Service :</label>
+          <select id="service_code" name="service_code" class="form-select" required>
+            {% for service in services %}
+              <option value="{{ service.Service_code }}">{{ service.Service_name }}</option>
+            {% endfor %}
+          </select>
+
+          <label for="nombre_OT" class="form-label mt-3">Nombre d'opérations (OT) :</label>
+          <input type="number" id="nombre_OT" name="nombre_OT" class="form-control" min="0" required>
+          <div id="numeric-keypad" class="keypad">
+            <button type="button" onclick="appendNumber('1')">1</button>
+            <button type="button" onclick="appendNumber('2')">2</button>
+            <button type="button" onclick="appendNumber('3')">3</button><br>
+            <button type="button" onclick="appendNumber('4')">4</button>
+            <button type="button" onclick="appendNumber('5')">5</button>
+            <button type="button" onclick="appendNumber('6')">6</button><br>
+            <button type="button" onclick="appendNumber('7')">7</button>
+            <button type="button" onclick="appendNumber('8')">8</button>
+            <button type="button" onclick="appendNumber('9')">9</button><br>
+            <button type="button" onclick="clearNumber()">C</button>
+            <button type="button" onclick="appendNumber('0')">0</button>
+            <button type="button" onclick="deleteLast()">←</button>
+          </div>
+
+          <script>
+            function appendNumber(num) {
+              const input = document.getElementById('nombre_OT');
+              input.value += num;
+            }
+            function clearNumber() {
+              document.getElementById('nombre_OT').value = '';
+            }
+            function deleteLast() {
+              const input = document.getElementById('nombre_OT');
+              input.value = input.value.slice(0, -1);
+            }
+          </script>
+
+          <p class="text-danger mt-2">
+            La saisie est possible uniquement le mercredi.
+          </p>
+        </div>
+        <div class="modal-footer">
+          <button type="submit" class="btn btn-warning" id="submitHebdoBtn">Enregistrer</button>
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

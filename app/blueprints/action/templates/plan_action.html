@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Plan d'action</title>
+
+    <!-- style global -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}" />
+
+    <!-- Bootstrap -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <!-- Luxon, requis par Tabulator pour le formatter datetime -->
+    <script src="https://cdn.jsdelivr.net/npm/luxon@3/build/global/luxon.min.js"></script>
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}" />
+
+    <!-- Tabulator CSS -->
+    <link href="https://unpkg.com/tabulator-tables@5.5.0/dist/css/tabulator.min.css" rel="stylesheet" />
+</head>
+<body>
+<main>
+    {% include 'Header.html' %}
+    {% block content %}
+    <h1>Plan d'action Maintenance</h1>
+
+    <button id="toggleSuivi" class="btn btn-secondary mb-3">Masquer les actions "suivi analyse de panne"</button>
+    <button id="addActionBtn" class="btn btn-success mb-3">Ajouter une action</button>
+
+    <div id="planActionTable"></div>
+
+    <h3>Actions clôturées</h3>
+    <div id="planActionClotureTable"></div>
+
+    {% endblock %}
+    {% include 'Footer.html' %}
+</main>
+
+<!-- Bootstrap JS Bundle -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+<!-- Tabulator JS -->
+<script src="https://unpkg.com/tabulator-tables@5.5.0/dist/js/tabulator.min.js"></script>
+
+<!-- Ton JS commun -->
+<script src="{{ url_for('static', filename='js/commun.js') }}" defer></script>
+
+<!-- Ton JS action spécifique -->
+<script src="{{ url_for('action.static', filename='js/action.js') }}" defer></script>
+
+<!-- Modal Ajouter Action -->
+<div class="modal fade" id="addActionModal" tabindex="-1" aria-labelledby="addActionModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <form id="addActionForm" class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="addActionModalLabel">Ajouter une action</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+      </div>
+      <div class="modal-body">
+        <!-- Personnel ID -->
+        <div class="mb-3">
+          <label for="newPersonnelId" class="form-label">Pilote</label>
+          <select id="newPersonnelId" name="personnel_id" class="form-select" required>
+            <option value="">Sélectionnez un pilote</option>
+          </select>
+        </div>
+        <!-- Date -->
+        <div class="mb-3">
+          <label for="newDate" class="form-label">Date</label>
+          <input type="date" class="form-control" id="newDate" name="date" required>
+        </div>
+        <!-- Délai initial -->
+        <div class="mb-3">
+          <label for="newDelaiInitiale" class="form-label">Délai initial</label>
+          <input type="date" class="form-control" id="newDelaiInitiale" name="delai_initiale" required>
+        </div>
+        <!-- Type -->
+        <div class="mb-3">
+          <label for="newType" class="form-label">Type</label>
+          <select id="newType" name="type" class="form-select" required>
+            <option value="">-- Sélectionnez un type --</option>
+            <option value="Huddle">Huddle</option>
+            <option value="Analyse de panne">Analyse de panne</option>
+            <option value="Demande Maintenance & BE">Demande Maintenance & BE</option>
+            <option value="Projet">Projet</option>
+            <option value="Etiquettes">Etiquettes</option>
+          </select>
+        </div>
+        <!-- Sujet -->
+        <div class="mb-3">
+          <label for="newActionSujet" class="form-label">Sujet</label>
+          <input type="text" id="newActionSujet" name="sujet" class="form-control" required>
+        </div>
+        <!-- Action -->
+        <div class="mb-3">
+          <label for="newActionAction" class="form-label">Action</label>
+          <textarea id="newActionAction" name="action" class="form-control" rows="3" required></textarea>
+        </div>
+        <!-- Tu peux ajouter d'autres champs comme statut, commentaire, etc. si besoin -->
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+        <button type="submit" class="btn btn-primary">Ajouter</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Modal Edition Action -->
+<div class="modal fade" id="editActionModal" tabindex="-1" aria-labelledby="editActionModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <form id="editActionForm" class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="editActionModalLabel">Modifier l'action</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="planId" name="plan_id" />
+        <div class="mb-3">
+          <label for="editPersonnelName" class="form-label">Pilote</label>
+          <input type="text" id="editPersonnelName" class="form-control" readonly>
+        </div>
+        <div class="mb-3">
+          <label for="editActionText" class="form-label">Action</label>
+          <textarea id="editActionText" class="form-control" rows="3" readonly></textarea>
+        </div>
+        <div class="mb-3">
+          <label for="editCommentaire" class="form-label">Commentaire</label>
+          <input type="text" id="editCommentaire" name="commentaire" class="form-control">
+        </div>
+        <div class="mb-3">
+          <label for="editDelaiRevise" class="form-label">Délai révisé</label>
+          <input type="date" id="editDelaiRevise" name="delai_revise" class="form-control">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+        <button type="submit" class="btn btn-primary">Enregistrer</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+</body>
+</html>

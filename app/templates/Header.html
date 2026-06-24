@@ -1,0 +1,17 @@
+<header>
+  <div class="calendar-container">
+    <label for="datePicker">Choisissez une date :</label>
+    <input type="date" id="datePicker" name="date_session" value="{{ session_date_display or today }}">
+    <button onclick="goToDate()">Afficher</button>
+    <p id="dateError" style="color:red;"></p>
+
+    {% if session_date %}
+        {% if no_session_found %}
+            <h2 style="color: red;">Aucune session enregistrée pour le {{ session_date.strftime('%d/%m/%Y') }}</h2>
+        {% else %}
+            <h2>Session du {{ session_date.strftime('%d/%m/%Y') }} (ID {{ session_id }})</h2>
+        {% endif %}
+        <a href="{{ url_for('home.huddle_home') }}">← Revenir à la session du jour</a>
+    {% endif %}
+  </div>
+</header>

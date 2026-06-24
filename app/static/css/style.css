@@ -1,0 +1,153 @@
+/* ==================== MEDIA QUERIES ==================== */
+@media (max-width: 768px) {
+  .safety-status,
+  .safety-cross {
+    flex: 1 1 100%;
+    max-width: 100%;
+  }
+}
+
+@media (min-width: 1200px) {
+  body {
+    font-size: 22px;
+  }
+  h1 {
+    font-size: 4rem;
+  }
+  .tabs .tab {
+    font-size: 1.75rem;
+  }
+  .incident-card h2 {
+    font-size: 2.5rem;
+  }
+  .info {
+    font-size: 1.75rem;
+  }
+  /* Agrandissement supplémentaire sur grands écrans */
+  .day {
+    width: 60px;
+    height: 60px;
+  }
+}
+
+/* ==================== BASE / BODY ==================== */
+body {
+  /* Dégradé de fond */
+  background: linear-gradient(120deg, #f4f6f8 0%, #e3eeea 100%);
+  margin: 0;
+  padding: 20px;
+  font-size: 1.75rem;  /* base font-size plus grand */
+  transition: background-color 0.3s ease;
+}
+
+h1 {
+  color: #95bcb4;
+  text-align: center;
+  font-size: 3rem;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+
+/* ==================== TABS / NAVIGATION ==================== */
+.tabs {
+  display: flex;
+  justify-content: center;
+  background-color: #95bcb4;
+  padding: 10px 0;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+.tab {
+  color: white;
+  text-decoration: none;
+  font-weight: bold;
+  margin: 0 15px;
+  padding: 8px 16px;
+  border-radius: 6px;
+  transition: background 0.3s ease;
+}
+.tabs .tab {
+  font-size: 1.1vw;
+  padding: 1.5vw 2.5vw;
+}
+.tab:hover {
+  background-color: #7ca59b;
+}
+.tab.active {
+  background-color: #558b7f;
+}
+/* ========= ICÔNE + BADGE ========= */
+#bg-status-icon {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  background: #95bcb4;         /* vert turquoise */
+  color: white;
+  font-size: 1.5rem;
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 1000;
+}
+
+#bg-status-icon .badge {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  background: #e74c3c;       /* rouge alerte */
+  color: white;
+  font-size: 0.7rem;
+  min-width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ========= PANNEAU DE LOGS ========= */
+#bg-status-panel {
+  position: fixed;
+  bottom: 80px;
+  right: 20px;
+  width: 300px;
+  max-height: 350px;
+  overflow-y: auto;
+  background: white;
+  border: 1px solid #ddd;
+  border-left: 4px solid #95bcb4;
+  border-radius: 8px;
+  padding: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+  display: none;
+  z-index: 1000;
+}
+
+#bg-status-panel.visible {
+  display: block;
+}
+
+#bg-status-panel h4 {
+  margin-top: 0;
+  color: #2c3e50;
+}
+
+#bg-status-list {
+  list-style: none;
+  padding: 0;
+  margin: 8px 0;
+}
+
+#bg-status-list li {
+  font-size: 0.85rem;
+  margin-bottom: 4px;
+}
+
+.log-success { color: green; }
+.log-warning { color: orange; }
+.log-error   { color: red; }

@@ -1,0 +1,17 @@
+prometheus.exporter.postgres "integrations_postgres_exporter" {
+    data_source_names = ["postgresql://huddle_user:Nouveau5ervice@172.30.203.146:5432/PM"]
+    wal = false
+}
+
+prometheus.scrape "integrations_postgres_exporter" {
+  targets    = prometheus.exporter.postgres.integrations_postgres_exporter.targets
+  job_name   = "integrations/postgres_exporter"
+  forward_to = [prometheus.remote_write.grafana_cloud_metrics.receiver]
+}
+
+prometheus.remote_write "grafana_cloud_metrics" {
+  endpoint {
+    url = "https://prometheus-prod-58-prod-eu-central-0.grafana.net/api/prom/push"
+    bearer_token = "glc_eyJvIjoiMTQxMTgwOCIsIm4iOiJzdGFjay0xMjM3ODI3LWhtLXJlYWQtYWxsb3lfbWV0cmljcyIsImsiOiJReTg0aFhJMGU1ODE4NTVVZ0RoMGRXa28iLCJtIjp7InIiOiJwcm9kLWV1LWNlbnRyYWwtMCJ9fQ=="
+  }
+}

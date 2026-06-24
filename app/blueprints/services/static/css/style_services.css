@@ -1,0 +1,383 @@
+/* ================================
+     1.  warning
+   ================================ */
+   .warnings-grid {
+     display: grid;
+     grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+     gap: 1rem;
+     margin-top: 1rem;
+   }
+   .warning-card {
+     padding: 1rem;
+     border-radius: 0.5rem;
+     box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+     background-color: #fff;
+   }
+   .warning-card h4 {
+     margin: 0 0 0.5rem;
+     font-size: 1.1rem;
+   }
+   .warning-card p {
+     margin: 0.25rem 0;
+     font-size: 0.9rem;
+   }
+
+
+   /* ================================
+     2. Styles généraux (copie de ton <style> inline)
+   ================================ */
+body { font-family: Arial, sans-serif; }
+
+.calendar-container {
+  margin: auto;
+  border: 2px solid #95bcb4;
+  border-radius: 8px;
+  padding: 16px;
+  margin: 20px 0;
+  background: #f9fafa;
+}
+
+.header { display: flex; justify-content: space-between; align-items: center; }
+.view-buttons button { padding: 5px 10px; margin: 5px; }
+.calendar { display: none; }
+.calendar.active { display: block; }
+
+table { width: 100%; border-collapse: collapse; }
+#planningTable, .calendar table {
+  background-color: white;
+  box-shadow: 0 0 10px rgba(0,0,0,0.1);
+}
+#planningTable td + td {
+  border-left: 2px solid #95bcb4;
+}
+
+th, td {
+  border: 4px solid #ddd;
+  text-align: center;
+  padding: 10px;
+  position: relative;
+}
+th {
+  background-color: #f4f4f4;
+}
+
+/* JOUR + DATE */
+.day-header {
+  background: #fafafa;
+  font-weight: 600;
+}
+.date-cell {
+  background: #ffffff;
+  font-size: 0.8rem;
+  color: #888;
+  border: 1px dashed #bbb;
+}
+
+.day-cell:hover {
+  background-color: #f0f8ff;
+  cursor: pointer;
+}
+
+
+/* COLONNES JOUR (vue semaine) */
+td.day-cell {
+  min-height: 200px;          /* passe de 100px à 200px ou plus selon besoin */
+  padding: 8px;               /* ajoute un peu d’espace interne */
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+td.day-cell:hover {
+  background-color: #e6f7f7;
+}
+
+
+/* COULEUR WEEK-END */
+.calendar tbody td:nth-child(7),
+.calendar tbody td:nth-child(8),
+.day-header:nth-child(7),
+.day-header:nth-child(8),
+.date-cell:nth-child(7),
+.date-cell:nth-child(8) {
+  background: #f9f9ff;
+}
+
+/* ACTIVITÉ + PERSONNEL */
+.activity {
+  background-color: #e8e8e8;
+  font-weight: bold;
+}
+
+/*  ENCADRER CHAQUE ACTIVITÉ */
+.titre-act {
+  display: flex;           /* remplace block pour align-items et gap */
+  align-items: center;
+  gap: 10px;
+
+  white-space: normal;    /* empêcher le retour à la ligne */
+  overflow: hidden;       /* cacher le débordement */
+  text-overflow: ellipsis;/* ajoute "..." si trop long */
+
+  padding-right: 8px;     /* espace à droite */
+  cursor: pointer;
+
+  font-weight: 600;
+  font-size: 0.85rem;
+  color: #333;
+}
+
+.activity-droppable {
+  padding-right: 10px; /* espace à droite */
+  width: 80%;
+  display: flex;       /* pour aligner horizontalement si besoin */
+  flex-direction: column;
+  gap: 5px;
+  align-items: flex-start;
+}
+
+.titre-act:hover {
+  background-color: #d0f0fd;
+  border-color: #007bff;
+  box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+  transition: all 0.2s ease-in-out;
+}
+
+/* au survol, indiquer qu’on peut déposer */
+.activity-droppable:hover {
+  border-color: #007bff;
+  background-color: rgba(0, 123, 255, 0.05);
+  transition: border-color .2s, background-color .2s;
+}
+
+.zone-personnes {
+  margin-top: 4px;
+  min-height: 20px;
+}
+.zone-personnes .person {
+  background: #d1ecf1;
+  color: #0c5460;
+  border-radius: 12px;
+  padding: 2px 6px;
+  font-size: 0.75rem;
+  display: inline-block;
+  margin: 2px 4px;
+  cursor: pointer;
+}
+
+/* SECTION PERSONNEL */
+.person-name {
+  margin-top: 10px;
+  flex: 1;
+  border-left: 2px solid #95bcb4;
+  padding-left: 16px;
+}
+
+.person-equipe {
+  font-size: 0.8em;
+  color: #666;
+  margin-left: 6px;
+  font-style: italic;
+  opacity: 0.7;
+}
+
+
+/* BOUTONS / CONTROLS */
+.view-buttons button,
+#prevBtn,
+#nextBtn,
+#addActivityBtn {
+  padding: 6px 12px;
+  background: #95bcb4;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  margin: 4px;
+}
+.view-buttons button:hover,
+#addActivityBtn:hover {
+  background: #7ca59b;
+}
+#newActivity {
+  padding: 6px;
+  border-radius: 4px;
+  border: 1px solid #ccc;
+}
+
+/* INFOS / AIDE */
+.planning-intro,
+.planning-footer {
+  margin: 12px 0;
+  font-size: 0.95rem;
+  color: #555;
+}
+.fade-in {
+  animation: fadeIn 0.4s ease-in-out;
+}
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(5px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* BULLES D’INFO (dot + tooltip) */
+.dot-wrapper {
+  display: inline-block;
+  margin: 2px;
+  position: relative;
+}
+.dot {
+  height: 10px;
+  width: 10px;
+  border-radius: 50%;
+  display: inline-block;
+  cursor: pointer;
+}
+.tooltip {
+  visibility: hidden;
+  background-color: #333;
+  color: #fff;
+  text-align: left;
+  border-radius: 4px;
+  padding: 6px;
+  font-size: 0.75rem;
+  position: absolute;
+  z-index: 10;
+  bottom: 125%;
+  left: 50%;
+  transform: translateX(-50%);
+  white-space: nowrap;
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+.dot-wrapper:hover .tooltip {
+  visibility: visible;
+  opacity: 1;
+}
+
+/* COMPTEUR D’ACTIVITÉS */
+.activity-count {
+  font-size: 0.75rem;
+  color: #888;
+  margin-top: 4px;
+  text-align: center;
+}
+
+/* LÉGENDE */
+.legend {
+  margin-top: 20px;
+  padding: 10px;
+  background: #f2f2f2;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+}
+.legend h4 {
+  margin: 0 0 8px;
+  font-size: 1rem;
+}
+.legend-list {
+  list-style: none;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+.legend-list li {
+  display: flex;
+  align-items: center;
+  font-size: 0.9rem;
+}
+.legend-list .dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  display: inline-block;
+  margin-right: 6px;
+}
+
+.titre-act span {
+  font-size: 1rem;
+  color: #e67e22;
+  cursor: help;
+}
+
+/* MENU CONTEXTE */
+#context-menu .menu-item {
+  padding: 8px 12px;
+  cursor: pointer;
+}
+#context-menu .menu-item:hover {
+  background: #f0f0f0;
+}
+
+/* BADGE STATUT */
+.statut-badge {
+  z-index: 10;
+  position: relative;
+}
+
+/* ================================
+     2. PARTIE PERSONNEL
+   ================================ */
+.calendar-container .calendar#week #planningTable td.person-name {
+  width: 180px;
+  background: #f9fafa;
+  padding: 0.75rem;
+  vertical-align: middle;
+
+}
+
+.calendar-container .calendar#week #planningTable td.person-name .person-b {
+  display: inline-block;
+  padding: 4px 10px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  /* plus de transition ni de cursor grab */
+  cursor: default;
+  transition: background-color 0.2s, transform 0.1s;
+
+}
+
+.calendar-container .calendar#week #planningTable td.person-name .person-b:hover {
+  background-color: #d1e7e5;
+  transform: translateY(-1px);
+}
+
+/* Quleques ajustements Bootstrap overrides */
+.calendar-container table th:first-child,
+.calendar-container table td:first-child {
+  border-left: 2px solid #95bcb4;
+}
+
+/* Colonnes des jours : répartir équitablement le reste */
+#planningTable th:not(:first-child),
+#planningTable td.day-cell {
+  width: calc((100% - 180px) / 7); /* largeur égale pour chaque jour */
+  min-width: calc((100% - 180px) / 7);
+  max-width: calc((100% - 180px) / 7);
+  box-sizing: border-box; /* inclure padding et bordures */
+  vertical-align: top;    /* aligner le contenu en haut */
+  word-wrap: break-word;  /* retour à la ligne si nécessaire */
+}
+
+.shift-label {
+  display: block;
+  font-size: 0.85em;
+  color: #555;
+  margin-top: 2px;
+}
+/*Renfort */
+.renfort-person-name {
+  background-color: #f3a980 !important;  /* Vert visible */
+  color: white !important;               /* Texte blanc */
+  font-weight: bold;
+}
+.cell-repos {
+  background-color: #f0f0f0;
+  color: #999999;
+  font-style: italic;
+}
+
+.cell-poste {
+  background-color: #e0e0e0;
+  color: #666666;
+  font-style: normal;
+}

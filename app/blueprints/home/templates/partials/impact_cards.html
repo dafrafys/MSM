@@ -1,0 +1,62 @@
+{% if impacts %}
+  {% for imp in impacts %}
+    {# 1) Calcule danger vs warning #}
+    {% if imp.pertes is iterable and not imp.pertes is string %}
+      {% set non_fil = imp.pertes | selectattr('type', 'ne', 'Fil humide') | list %}
+      {% set danger = non_fil|length > 0 %}
+      {% set warning = (imp.pertes|length > 0) and not danger %}
+      {% set total_perte = imp.pertes | sum(attribute='poids') %}
+    {% else %}
+      {% set danger = imp.pertes > 0 %}
+      {% set warning = false %}
+      {% set total_perte = imp.pertes %}
+    {% endif %}
+
+    {# 2) Calcule urgent : plus d’1 h ou plus de 100 kg #}
+    {% set urgent = (imp.temps_arret and imp.temps_arret.total_seconds() > 3600)
+                    or (total_perte > 100) %}
+    {% set has_plan = imp.plan_uploaded %}
+    {% set do_pulse = urgent and not has_plan %}
+
+    <div class="impact-card
+      {% if danger %} danger{% elif warning %} warning{% endif %}
+      {% if do_pulse %} urgent{% endif %}"
+      data-impact-id="{{ imp.impact_id }}"
+      data-impact-date="{{ imp.date.strftime('%Y-%m-%d') }}">
+
+      <h3>Impact #{{ imp.impact_id }} – {{ imp.date.strftime('%d/%m/%Y') }}</h3>
+
+      {% if imp.poste is defined %}
+        <div class="info"><strong>Poste :</strong> {{ imp.poste }}</div>
+        <div class="info"><strong>Équipe :</strong> {{ imp.equipe }}</div>
+      {% else %}
+        <div class="info"><strong>Équipe :</strong> {{ imp.equipe }}</div>
+      {% endif %}
+
+      <div class="info"><strong>Type :</strong> {{ imp.type_perte }}</div>
+
+      {% if imp.ligne is defined and imp.ligne %}
+        <div class="info"><strong>Ligne :</strong> {{ imp.ligne or '–' }}</div>
+        <div class="info"><strong>Équipement :</strong> {{ imp.equipement or '–' }}</div>
+
+        {% if imp.temps_arret is defined and imp.temps_arret %}
+          <div class="info"><strong>Temps d'arrêt :</strong> {{ imp.temps_arret|format_interval }}</div>
+        {% endif %}
+
+        <div class="info"><strong>Perte (kg) :</strong> {{ total_perte }}</div>
+        {% if imp.pertes is iterable and not imp.pertes is string %}
+          <ul>
+            {% for perte in imp.pertes %}
+              <li>{{ perte.type }} : {{ perte.poids }} kg</li>
+            {% endfor %}
+          </ul>
+        {% else %}
+
+        {% endif %}
+      {% endif %}
+      <div class="info"><strong>Description :</strong> {{ imp.description }}</div>
+    </div>
+  {% endfor %}
+{% else %}
+  <p>Aucun impact.</p>
+{% endif %}

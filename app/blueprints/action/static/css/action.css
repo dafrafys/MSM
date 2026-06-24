@@ -1,0 +1,20 @@
+/* Autoriser le retour à la ligne dans les cellules Tabulator */
+.tabulator-cell {
+  white-space: normal !important;
+  word-wrap: break-word !important;
+  overflow-wrap: break-word !important;
+  word-break: break-word !important;
+}
+
+/* Optionnel : Limiter la hauteur max des cellules avec scroll */
+.tabulator-cell {
+  max-height: 6em;
+  overflow-y: auto;
+}
+.tabulator-cell textarea {
+  white-space: normal !important;
+  overflow-wrap: break-word;
+  word-break: break-word;
+  height: auto;
+  min-height: 40px; /* Ajuste la hauteur minimale */
+}
