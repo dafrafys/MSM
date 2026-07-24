@@ -488,9 +488,18 @@ function updateWeekView(startDate, activities, personnelsFixes, renforts) {
         //if (p.is_renfort) {
           //td.classList.add('renfort-cell');
         //}
-        const titresRepos = ["REPOS", "C.P.", "A.M.", "Congés", "Congé"];
+	function normalize(str) {
+	 return str
+	  .normalize("NFD")
+	  .replace(/[\u0300-\u036f]/g, "")
+	  .toUpperCase()
+	  .trim();
+	} 
+
+	const titresRepos = ["REPOS", "C.P.", "A.M.", "Conges", "Conge", "Ferie", "R.H."]
+	  .map(normalize);
         const estRepos = filtered.some(a => {
-          const titre = a.titre.toUpperCase().trim();
+          const titre = normalize(a.titre);
           return titresRepos.includes(titre);
         });
         if (estRepos) {
