@@ -45,6 +45,7 @@ def get_impacts(engine, sid, *, year=None, month=None, start_date=None, end_date
         i."Impact_Id", i."Date_Imp" AS date,
         i."Plan_Uploaded" AS plan_uploaded,
         d."Poste_Imp" AS poste,
+        d."Equipe_Imp" AS equipe,
         i."Type_de_Perte" AS type_perte,
         i."Secteur_Imp" AS secteur,
         d.ligne AS ligne,
