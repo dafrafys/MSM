@@ -19,6 +19,7 @@ def fetch_supervision():
             OriginationTime,
             TerminationTime,
             MachineType,
+            Filterid,
             PayLoad,
             name,
             Duration
@@ -37,7 +38,7 @@ def fetch_supervision():
             "start": str(r.OriginationTime),
             "end": str(r.TerminationTime),
             "face": r.PayLoad,
-            "machine": r.MachineType,
+            "machine": str(r.Filterid),
             "description": r.name,
             "duration": format_duration(r.Duration),
         }
